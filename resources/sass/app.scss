@@ -1,0 +1,46 @@
+
+// Fonts
+@import url('https://fonts.googleapis.com/css?family=Nunito');
+
+// Variables
+@import 'variables';
+
+// Bootstrap
+@import '~bootstrap/scss/bootstrap';
+//admin lte
+@import '~admin-lte/dist/css/adminlte.css';
+@import '~admin-lte/plugins/datatables/dataTables.bootstrap4.css';
+@import '~admin-lte/plugins/datatables/jquery.dataTables.min.css';
+//error message rules
+@mixin  error($errorColor,$errorBg){
+  color:$errorColor;
+  padding:.5em;
+  background: $errorBg;
+  margin:1px;
+  border-radius: 5px;
+}
+.navbar-laravel {
+  background-color: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+.fit-table-content{
+  white-space: nowrap;
+  width: 1%;
+}
+.triangle-nav{
+  position:relative;
+  margin-bottom: -5px;
+}
+.triangle-nav::before{
+  content: "";
+  z-index: 100;
+  position: absolute;
+  border:.8em solid transparent;
+  border-right-color:#343a40;
+  top:22%;
+  right: 0;
+  
+}
+.error{
+ @include error(white,rgba(163, 20, 20, 0.932))
+}
