@@ -11,4 +11,7 @@ class Specialization extends Model
     public function job_specializations(){
         return $this->hasMany('App\Job_specialization');
     }
+    public function applicant_specializations(){
+        return $this->hasMany('App\Applicant_specialization');
+    }
 }

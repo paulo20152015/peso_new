@@ -21,4 +21,7 @@ class Job_post extends Model
     public function job_specializations(){
         return $this->hasMany('App\Job_specialization');
     }
+    public function job_applications(){
+        return $this->hasMany('App\Job_application');
+    }
 }

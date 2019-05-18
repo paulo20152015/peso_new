@@ -34,13 +34,13 @@ if(!function_exists('conver_sms_result')){
 				return "Sms notification has been sent";
 			break;
 			case 1:
-				return "Invalid Number";
+				return "SMS not delivered, Invalid Number";
 			break;
 			case 2:
-				return "Invalid message or missing";
+				return "SMS not delivered, Invalid message or missing";
 			break;
 			case 3:
-				return "invalid Api key";
+				return "SMS not delivered, invalid Api key";
 			break;
 			default:
 			 return "SMS message failed to send";

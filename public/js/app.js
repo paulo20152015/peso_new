@@ -17118,6 +17118,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
+      disable: '',
       spinner: '',
       spinnerPass: '',
       userData: {
@@ -17163,14 +17164,17 @@ __webpack_require__.r(__webpack_exports__);
     updateAdminPassword: function updateAdminPassword() {
       var vm = this;
       vm.spinLoadingPass();
+      vm.disable = 1;
       vm.adminPassword.post('/admin/updateself-pass').then(function (_ref2) {
         var data = _ref2.data;
         console.log(data);
         swal('Response', data);
         vm.spinLoadingPass();
+        vm.disable = '';
         vm.getAdminData();
       })["catch"](function (error) {
         vm.spinLoadingPass();
+        vm.disable = '';
         console.log(error.data);
       });
     },
@@ -17438,6 +17442,7 @@ __webpack_require__.r(__webpack_exports__);
         console.log(data);
         swal('Success', '', 'success');
         vm.parentSortAdmin(vm.current_page);
+        window.location.reload();
       });
     }
   }
@@ -17627,6 +17632,7 @@ __webpack_require__.r(__webpack_exports__);
       filterFlag: 0,
       admins: [],
       number: 0,
+      disable: '',
       adminAuthoritySort: '',
       current_page: '',
       links: {
@@ -17659,13 +17665,16 @@ __webpack_require__.r(__webpack_exports__);
       }).then(function (willDelete) {
         if (willDelete) {
           var vm = _this;
+          vm.disable = 1;
           axios.patch('/admin/admins-archive/' + id).then(function (res) {
             if (res.data.result == 'success') {
               vm.sortAdmin(vm.current_page);
             }
 
+            vm.disable = '';
             console.log(res.data);
           })["catch"](function (error) {
+            vm.disable = '';
             console.log(error.response);
           });
           swal(admin + " has been archived!", {
@@ -17842,6 +17851,7 @@ __webpack_require__.r(__webpack_exports__);
     return {
       autopassword: '',
       spinner: '',
+      disable: '',
       companyCreateForm: new Form({
         username: '',
         name: '',
@@ -17874,14 +17884,17 @@ __webpack_require__.r(__webpack_exports__);
       this.$validator.validateAll(['username', 'password', 'email', 'number', 'password']).then(function (result) {
         if (result) {
           vm.spinLoading();
+          vm.disable = 1;
           vm.companyCreateForm.post('/admin/companies/create').then(function (_ref) {
             var data = _ref.data;
             vm.spinLoading();
             console.log(data);
             swal('Created', data, 'success');
             vm.parentGetCompanies(vm.currentPage);
+            vm.disable = '';
           })["catch"](function (error) {
             vm.spinLoading();
+            vm.disable = '';
           });
         } else {
           swal('Aborted! ', "Errors detected", "error");
@@ -18061,6 +18074,7 @@ __webpack_require__.r(__webpack_exports__);
       filterFlag: 0,
       current_page: '',
       total: '',
+      disable: '',
       links: {
         first_page: '',
         last_page_url: '',
@@ -18104,13 +18118,16 @@ __webpack_require__.r(__webpack_exports__);
       }).then(function (willDelete) {
         if (willDelete) {
           var vm = _this;
+          vm.disable = 1;
           axios.patch('/admin/company-archive/' + id).then(function (res) {
             if (res.data.result == 'success') {
               vm.getCompanies(vm.current_page);
             }
 
+            vm.disable = '';
             console.log(res.data);
           })["catch"](function (error) {
+            vm.disable = '';
             console.log(error.response);
           });
           swal(company + " has been archived!", {
@@ -18295,7 +18312,7 @@ __webpack_require__.r(__webpack_exports__);
               window.location.href = data.redirect;
             } else {
               if (data.success == 2) {
-                vm.message = 'password is incorrect!';
+                vm.message = 'password is incorrect! or account is disabled';
               } else if (data.success == 3) {
                 vm.message = 'This user does not exist!';
               }
@@ -19931,6 +19948,7 @@ __webpack_require__.r(__webpack_exports__);
             swal("Specialization has been successfully " + action, {
               icon: "success"
             });
+            window.location.reload();
             vm.getSpecializationDoesnt();
             vm.getSpecializationHas();
           })["catch"](function (error) {
@@ -20146,6 +20164,7 @@ __webpack_require__.r(__webpack_exports__);
       spinner: '',
       message: '',
       messageSuccess: '',
+      disable: '',
       companyLoginForm: new Form({
         username: '',
         password: '',
@@ -20161,19 +20180,20 @@ __webpack_require__.r(__webpack_exports__);
       var vm = this;
       this.$validator.validateAll(['username', 'password']).then(function (result) {
         if (result) {
+          vm.disable = 1;
           vm.spinLoading();
           vm.companyLoginForm.post('/company/login').then(function (_ref) {
             var data = _ref.data;
             vm.spinLoading();
+            vm.disable = '';
             console.log(data);
 
             if (data.success == 1) {
               vm.messageSuccess = 'Login successfully';
-              vm.message = '';
               window.location.href = data.redirect;
             } else {
               if (data.success == 2) {
-                vm.message = 'password is incorrect!';
+                vm.message = 'password is incorrect!, or account is disabled';
               } else if (data.success == 3) {
                 vm.message = 'This user does not exist!';
               }
@@ -20181,6 +20201,7 @@ __webpack_require__.r(__webpack_exports__);
           })["catch"](function (error) {
             vm.message = 'Failed!';
             vm.spinLoading();
+            vm.disable = '';
           });
         } else {}
       });
@@ -86453,7 +86474,7 @@ var render = function() {
           "button",
           {
             staticClass: "btn btn-primary mt-2",
-            attrs: { type: "button" },
+            attrs: { disabled: _vm.disable == 1, type: "button" },
             on: {
               click: function($event) {
                 return _vm.updateAdminPassword()
@@ -87497,7 +87518,28 @@ var render = function() {
                   )
                 ]),
                 _vm._v(" "),
-                _vm._m(1)
+                _c("div", { staticClass: "modal-footer" }, [
+                  _c(
+                    "button",
+                    {
+                      staticClass: "btn btn-secondary",
+                      attrs: { type: "button", "data-dismiss": "modal" }
+                    },
+                    [_vm._v("Close")]
+                  ),
+                  _vm._v(" "),
+                  _c(
+                    "button",
+                    {
+                      staticClass: "btn btn-primary",
+                      attrs: {
+                        disabled: _vm.adminUpdateForm.busy,
+                        type: "submit"
+                      }
+                    },
+                    [_vm._v("Update")]
+                  )
+                ])
               ]
             )
           ])
@@ -87532,27 +87574,6 @@ var staticRenderFns = [
           }
         },
         [_c("span", { attrs: { "aria-hidden": "true" } }, [_vm._v("×")])]
-      )
-    ])
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "modal-footer" }, [
-      _c(
-        "button",
-        {
-          staticClass: "btn btn-secondary",
-          attrs: { type: "button", "data-dismiss": "modal" }
-        },
-        [_vm._v("Close")]
-      ),
-      _vm._v(" "),
-      _c(
-        "button",
-        { staticClass: "btn btn-primary", attrs: { type: "submit" } },
-        [_vm._v("Update")]
       )
     ])
   }
@@ -88286,7 +88307,10 @@ var render = function() {
                                                 "button",
                                                 {
                                                   staticClass: "btn btn-danger",
-                                                  attrs: { type: "button" },
+                                                  attrs: {
+                                                    disabled: _vm.disable == 1,
+                                                    type: "button"
+                                                  },
                                                   on: {
                                                     click: function($event) {
                                                       return _vm.archive(
@@ -89014,7 +89038,7 @@ var render = function() {
                       "button",
                       {
                         staticClass: "btn btn-primary",
-                        attrs: { type: "submit" }
+                        attrs: { type: "submit", disabled: _vm.disable == 1 }
                       },
                       [
                         _vm.spinner == 1
@@ -89696,7 +89720,10 @@ var render = function() {
                                         "button",
                                         {
                                           staticClass: "btn btn-secondary",
-                                          attrs: { type: "button" },
+                                          attrs: {
+                                            disabled: _vm.disable == 1,
+                                            type: "button"
+                                          },
                                           on: {
                                             click: function($event) {
                                               return _vm.archive(
@@ -90302,17 +90329,24 @@ var render = function() {
                 _vm._v(" Remember Me")
               ]),
               _vm._v(" "),
-              _c("button", { staticClass: "btn", attrs: { type: "submit" } }, [
-                _vm.spinner == 1
-                  ? _c("i", [
-                      _c("span", {
-                        staticClass: "spinner-border spinner-border-sm",
-                        attrs: { role: "status", "aria-hidden": "true" }
-                      })
-                    ])
-                  : _vm._e(),
-                _vm._v(" Login")
-              ])
+              _c(
+                "button",
+                {
+                  staticClass: "btn",
+                  attrs: { disabled: _vm.adminLoginForm.busy, type: "submit" }
+                },
+                [
+                  _vm.spinner == 1
+                    ? _c("i", [
+                        _c("span", {
+                          staticClass: "spinner-border spinner-border-sm",
+                          attrs: { role: "status", "aria-hidden": "true" }
+                        })
+                      ])
+                    : _vm._e(),
+                  _vm._v(" Login")
+                ]
+              )
             ],
             1
           )
@@ -91497,7 +91531,7 @@ var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _c("div", { staticClass: "jumbotron col-lg-6 offset-lg-3" }, [
+  return _c("div", { staticClass: "jumbotron col-lg-6 offset-lg-3 bg-dark" }, [
     _c("h3", { staticClass: "text-center" }, [_vm._v("Account Settings")]),
     _vm._v(" "),
     _c("div", {}, [
@@ -91610,7 +91644,7 @@ var render = function() {
           "button",
           {
             staticClass: "btn btn-primary mt-2",
-            attrs: { type: "submit" },
+            attrs: { disabled: _vm.companyNumber.busy, type: "submit" },
             on: {
               click: function($event) {
                 return _vm.updateCompany()
@@ -91842,7 +91876,7 @@ var render = function() {
           "button",
           {
             staticClass: "btn btn-primary mt-2",
-            attrs: { type: "button" },
+            attrs: { disabled: _vm.companyPassword.busy, type: "button" },
             on: {
               click: function($event) {
                 return _vm.updateCompanyPassword()
@@ -92713,7 +92747,10 @@ var render = function() {
                       "button",
                       {
                         staticClass: "btn btn-primary",
-                        attrs: { type: "submit" }
+                        attrs: {
+                          disabled: _vm.jobPostCreateForm.busy,
+                          type: "submit"
+                        }
                       },
                       [
                         _vm.spinner == 1
@@ -94620,11 +94657,9 @@ var render = function() {
                           }
                         },
                         [
-                          _c(
-                            "option",
-                            { attrs: { value: "0", selected: "" } },
-                            [_vm._v("none")]
-                          ),
+                          _c("option", { attrs: { value: "", selected: "" } }, [
+                            _vm._v("none")
+                          ]),
                           _vm._v(" "),
                           _vm._l(_vm.towns, function(town, index) {
                             return _c(
@@ -94995,7 +95030,10 @@ var render = function() {
                 "button",
                 {
                   staticClass: "btn btn-primary col-lg-6 offset-lg-3 mt-3",
-                  attrs: { type: "submit" }
+                  attrs: {
+                    disabled: _vm.jobPostCreateForm.busy,
+                    type: "submit"
+                  }
                 },
                 [
                   _vm.spinner == 1
@@ -95681,17 +95719,24 @@ var render = function() {
                 _vm._v(" Remember Me")
               ]),
               _vm._v(" "),
-              _c("button", { staticClass: "btn", attrs: { type: "submit" } }, [
-                _vm.spinner == 1
-                  ? _c("i", [
-                      _c("span", {
-                        staticClass: "spinner-border spinner-border-sm",
-                        attrs: { role: "status", "aria-hidden": "true" }
-                      })
-                    ])
-                  : _vm._e(),
-                _vm._v(" Login")
-              ])
+              _c(
+                "button",
+                {
+                  staticClass: "btn",
+                  attrs: { disabled: _vm.disable == 1, type: "submit" }
+                },
+                [
+                  _vm.spinner == 1
+                    ? _c("i", [
+                        _c("span", {
+                          staticClass: "spinner-border spinner-border-sm",
+                          attrs: { role: "status", "aria-hidden": "true" }
+                        })
+                      ])
+                    : _vm._e(),
+                  _vm._v(" Login")
+                ]
+              )
             ],
             1
           )

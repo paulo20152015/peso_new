@@ -73,7 +73,7 @@
                     <label for="town">Town : {{townoriginal}}</label>
                     <div>
                         <select  class="form-control" v-validate.continues="'required|excluded:0|numeric'" name='town' v-model="jobPostCreateForm.town" >
-                            <option value='0' selected>none</option>
+                            <option value='' selected>none</option>
                             <option v-for='(town,index) in towns' :value='town.id' :key='"town"+index'>{{town.town}}</option>
                         </select>
                     </div>
@@ -139,7 +139,7 @@
                     </p>
                 </transition>
             </div>
-            <button  type="submit" class="btn btn-primary col-lg-6 offset-lg-3 mt-3" >
+            <button :disabled="jobPostCreateForm.busy"  type="submit" class="btn btn-primary col-lg-6 offset-lg-3 mt-3" >
                 <i v-if="spinner == 1"><span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span></i>
                 Save
             </button>
@@ -303,6 +303,7 @@ export default {
                         swal("Specialization has been successfully "+action, {
                         icon: "success",
                         });
+                        window.location.reload();
                         vm.getSpecializationDoesnt();
                         vm.getSpecializationHas();
                     })

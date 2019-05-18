@@ -122,7 +122,7 @@
                                         <p> <small class="text-muted">Company Size: {{company.company_size}}</small></p>
                                         <div class="btn-group" role="group" aria-label="Basic example">
                                             <a :href="'/admin/company/'+company.id" target="__blank" class="btn btn-primary"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
-                                            <button type="button" class="btn btn-secondary" @click="archive(company.name,company.company_account.id)">Archive</button>
+                                            <button :disabled='disable == 1' type="button" class="btn btn-secondary" @click="archive(company.name,company.company_account.id)">Archive</button>
                                         </div>
                                     </div>
                                     </div>
@@ -158,6 +158,7 @@ export default {
             filterFlag:0,
             current_page:'',
             total:'',
+             disable:'',
             links:{
                 first_page:'',
                 last_page_url:'',
@@ -194,13 +195,16 @@ export default {
             .then((willDelete) => {
             if (willDelete) {
                 let vm = this;
+                vm.disable = 1;
                 axios.patch('/admin/company-archive/'+id)
                 .then(function(res){
                     if(res.data.result == 'success'){
                         vm.getCompanies(vm.current_page);
                     }
+                    vm.disable = '';
                     console.log(res.data);
                 }).catch(function(error){
+                    vm.disable = '';
                     console.log(error.response);
                 });
                 swal(company+" has been archived!", {

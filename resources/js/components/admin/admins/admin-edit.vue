@@ -72,7 +72,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary" >Update</button>
+                    <button :disabled="adminUpdateForm.busy" type="submit" class="btn btn-primary" >Update</button>
                 </div>
                 </form>
             </div>
@@ -104,6 +104,7 @@ export default {
                 console.log(data);
                 swal('Success','','success');
                 vm.parentSortAdmin(vm.current_page);
+                window.location.reload();
             });
         }
         

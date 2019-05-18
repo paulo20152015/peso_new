@@ -1,5 +1,5 @@
 <template>
-    <div class="jumbotron col-lg-6 offset-lg-3">
+    <div class="jumbotron col-lg-6 offset-lg-3 bg-dark">
     <h3 class="text-center">Account Settings</h3>
     <div class="" >
             <h4>Username : {{userData.username}}</h4>
@@ -20,7 +20,7 @@
                     </p>
                 </transition>          
             </div>
-            <button @click="updateCompany()" type="submit" class="btn btn-primary mt-2" >
+            <button :disabled="companyNumber.busy" @click="updateCompany()" type="submit" class="btn btn-primary mt-2" >
                 <i v-if="spinner == 1"><span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span></i>
                 Update Mobile
             </button>
@@ -59,7 +59,7 @@
                  </p>  
                </transition-group>          
             </div>
-            <button type="button" class="btn btn-primary mt-2" @click="updateCompanyPassword()">
+            <button :disabled="companyPassword.busy" type="button" class="btn btn-primary mt-2" @click="updateCompanyPassword()">
                 <i  v-if='spinnerPass == 1'><span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span></i>
                 Update Password
             </button>

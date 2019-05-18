@@ -91,7 +91,7 @@
                                         <td class="fit-table-content">
                                             <div class="btn-group" role="group" aria-label="Basic example">
                                                 <button type="button" class="btn btn-secondary" data-toggle="modal"  :data-target='"#modal"+admin.id' >Update</button>
-                                                <button type="button" class="btn btn-danger" @click='archive(admin.username,admin.id)'>Archive</button>
+                                                <button :disabled='disable == 1' type="button" class="btn btn-danger" @click='archive(admin.username,admin.id)'>Archive</button>
                                             </div>
                                         </td>
                                         <admins-edit :admindata='admin' :adminuser='admin.username' :current_page='current_page'></admins-edit>
@@ -127,6 +127,7 @@ export default {
             filterFlag:0,
             admins:[],
             number:0,
+            disable:'',
             adminAuthoritySort:'',
             current_page:'',
             links:{
@@ -160,13 +161,16 @@ export default {
             .then((willDelete) => {
             if (willDelete) {
                 let vm = this;
+                vm.disable = 1;
                 axios.patch('/admin/admins-archive/'+id)
                 .then(function(res){
                     if(res.data.result == 'success'){
                         vm.sortAdmin(vm.current_page);
                     }
+                    vm.disable = '';
                     console.log(res.data);
                 }).catch(function(error){
+                    vm.disable = '';
                     console.log(error.response);
                 });
                 swal(admin+" has been archived!", {

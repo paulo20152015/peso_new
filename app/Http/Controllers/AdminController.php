@@ -23,7 +23,7 @@ class AdminController extends Controller
         $company = Admin::where([['username','=',$validated['username']]])->get();
         $count = $company->count();
         if($count >= 1){
-            if (Auth::guard('admin')->attempt(['username'=>$request->username,'password'=>$request->password],$remember)) {
+            if (Auth::guard('admin')->attempt(['username'=>$request->username,'password'=>$request->password,'is_archive'=>0],$remember)) {
                 // Authentication passed...
                 return ['success'=>1,'redirect'=>'/admin'];
             }else{

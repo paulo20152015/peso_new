@@ -60,7 +60,7 @@
                  </p>  
                </transition-group>          
             </div>
-            <button type="button" class="btn btn-primary mt-2" @click="updateAdminPassword()">
+            <button :disabled='disable == 1' type="button" class="btn btn-primary mt-2" @click="updateAdminPassword()">
                 <i  v-if='spinnerPass == 1'><span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span></i>
                 Update Password
             </button>
@@ -72,6 +72,7 @@
 export default {
     data(){
         return{
+            disable:'',
             spinner:'',
             spinnerPass:'',
             userData: {
@@ -117,14 +118,17 @@ export default {
         updateAdminPassword(){
             let vm = this;
             vm.spinLoadingPass();
+             vm.disable = 1;
             vm.adminPassword.post('/admin/updateself-pass')
             .then( ({data}) => {
                 console.log(data);
                 swal('Response',data);
                 vm.spinLoadingPass();
+                vm.disable = '';
                 vm.getAdminData();
             }).catch(function(error){
                 vm.spinLoadingPass();
+                vm.disable = '';
                 console.log(error.data);
             });
         },

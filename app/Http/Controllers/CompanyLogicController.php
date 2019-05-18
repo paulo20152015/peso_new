@@ -42,11 +42,15 @@ class CompanyLogicController extends Controller
         }  
     }
     public function logout(){
-        $id = Auth::guard('company')->user()->id;
-        $compa = Company_account::findOrFail($id);
-        $compa->is_log = 0;
-        $compa->save();
-        Auth::guard('company')->logout();
+        if( Auth::guard('company')->check()){
+            $id = Auth::guard('company')->user()->id;
+            $compa = Company_account::findOrFail($id);
+            $compa->is_log = 0;
+            $compa->save();
+            Auth::guard('company')->logout();
+        }else{
+            Auth::guard('company')->logout();
+        }
         return redirect('/');
     }
     public function getCompanyData(){

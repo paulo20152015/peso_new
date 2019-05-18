@@ -32,4 +32,10 @@ class Company_account extends Authenticatable
     public function job_posts(){
         return $this->hasMany('App\Job_post');
     }
+    public function company_ratings(){
+        return $this->hasMany('App\Company_rating');
+    }
+    public function applicant_ratings(){
+        return $this->hasMany('App\Applicant_rating');
+    }
 }

@@ -99,7 +99,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary" >
+                    <button type="submit" class="btn btn-primary" :disabled='disable == 1'>
                         <i v-if="spinner == 1"><span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span></i>
                         Create
                     </button>
@@ -117,6 +117,7 @@ export default {
         return {
             autopassword:'',
             spinner:'',
+            disable:'',
             companyCreateForm:new Form({
                 username:'',
                 name:'',
@@ -149,14 +150,17 @@ export default {
             this.$validator.validateAll(['username','password','email','number','password']).then(function(result){
                 if(result){
                     vm.spinLoading();
+                    vm.disable = 1;
                     vm.companyCreateForm.post('/admin/companies/create')
                     .then( ({data}) => {
                          vm.spinLoading();
                          console.log(data);
                          swal('Created',data,'success');
                          vm.parentGetCompanies(vm.currentPage);
+                         vm.disable = '';
                           }).catch(function(error){
                          vm.spinLoading();
+                         vm.disable = '';
                           });
                 }else{
                     swal('Aborted! ',"Errors detected","error");

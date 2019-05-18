@@ -17,4 +17,7 @@ class Company_detail extends Model
     public function company_files(){
         return $this->hasMany('App\Company_file');
     }
+    public function employment_tracks(){
+        return $this->hasMany('App\Employment_track');
+    }
 }

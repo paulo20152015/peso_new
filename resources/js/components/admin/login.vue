@@ -44,7 +44,7 @@
                         </p>
                     </transition>
                     <label for="remember"><input v-model="adminLoginForm.remember" type="checkbox" name="remember" id="remember"> Remember Me</label>
-                    <button class="btn" type="submit"><i v-if="spinner == 1"><span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span></i> Login</button>
+                    <button :disabled="adminLoginForm.busy" class="btn" type="submit"><i v-if="spinner == 1"><span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span></i> Login</button>
                 </div>
             </form>
         </div>
@@ -58,6 +58,7 @@ export default {
             spinner:'',
             message:'',
             messageSuccess:'',
+           
             adminLoginForm:new Form({
                 username:'',
                 password:'',
@@ -74,6 +75,7 @@ export default {
             this.$validator.validateAll(['username','password']).then(function(result){
                 if(result){
                     vm.spinLoading();
+              
                     vm.adminLoginForm.post('/admin/login')
                     .then( ({data}) => {
                          vm.spinLoading();
@@ -84,14 +86,14 @@ export default {
                              window.location.href = data.redirect;
                          }else{
                              if(data.success == 2){
-                                vm.message ='password is incorrect!'
+                                vm.message ='password is incorrect! or account is disabled'
                              }else if(data.success == 3) {
                                 vm.message ='This user does not exist!'
                              }
                          }
                           }).catch(function(error){
                           vm.message ='Failed!'    
-                         vm.spinLoading();
+                          vm.spinLoading();
                           });
                 }else{
                    
