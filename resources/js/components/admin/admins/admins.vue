@@ -5,7 +5,7 @@
             <div class="container-fluid">
                 <div class="row">
                 <div class="col-lg-10 offset-lg-1">
-                    <button type="button" class="btn btn-primary triangle" data-toggle="modal" data-target="#exampleModalCenter">
+                    <button v-if='archivestatus == "not-archive"' type="button" class="btn btn-primary triangle" data-toggle="modal" data-target="#exampleModalCenter">
                         <i class="fa fa-plus"></i>admin
                     </button>
                     <div class="card  card-outline table-responsive">
@@ -90,8 +90,8 @@
                                         <td >{{humanTime(admin.updated_at)}}</td>
                                         <td class="fit-table-content">
                                             <div class="btn-group" role="group" aria-label="Basic example">
-                                                <button type="button" class="btn btn-secondary" data-toggle="modal"  :data-target='"#modal"+admin.id' >Update</button>
-                                                <button :disabled='disable == 1' type="button" class="btn btn-danger" @click='archive(admin.username,admin.id)'>Archive</button>
+                                                <button v-if='archivestatus == "not-archive"' type="button" class="btn btn-secondary" data-toggle="modal"  :data-target='"#modal"+admin.id' >Update</button>
+                                                <button :disabled='disable == 1' type="button" class="btn btn-danger" @click='archive(admin.username,admin.id)'>{{archivestatus == 'archive'?'Unarchive':'Archive'}}</button>
                                             </div>
                                         </td>
                                         <admins-edit :admindata='admin' :adminuser='admin.username' :current_page='current_page'></admins-edit>
@@ -114,6 +114,8 @@
 </template>
 <script>
 export default {
+    props:['archivestatus']
+    ,
     data(){
         return{
             search:'',
@@ -151,9 +153,10 @@ export default {
             this.filterFlag = this.filterFlag ==1?0:1;
         },
         archive:function(admin,id){
+            let action = this.archivestatus == 'archive'?'recover':'archive';
             swal({
                 title: "Are you sure?",
-                text: "your about to archive "+admin+"!",
+                text: "your about to "+action+" "+admin+"!",
                 icon: "warning",
                 buttons: true,
                 dangerMode: true,
@@ -161,6 +164,7 @@ export default {
             .then((willDelete) => {
             if (willDelete) {
                 let vm = this;
+                
                 vm.disable = 1;
                 axios.patch('/admin/admins-archive/'+id)
                 .then(function(res){
@@ -173,7 +177,7 @@ export default {
                     vm.disable = '';
                     console.log(error.response);
                 });
-                swal(admin+" has been archived!", {
+                swal("Success", {
                 icon: "success",
                 });
             } else {
@@ -189,7 +193,8 @@ export default {
             axios.post(url,{
                 sortLevel:sortByLevel,
                 order:orders,
-                search:vm.search
+                search:vm.search,
+                archivestatus:vm.archivestatus,
             })
             .then(function(res){
                 vm.admins = res.data.data;

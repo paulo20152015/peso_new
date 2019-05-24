@@ -41,6 +41,20 @@
   right: 0;
   
 }
+.bot-triangle-nav{
+  position:relative;
+  margin-bottom: -5px;
+}
+.bot-triangle-nav::before{
+  content: "";
+  z-index: 100;
+  position: absolute;
+  border:.5em solid transparent;
+  border-bottom-color:#fff;
+  top:50%;
+  left: 0%;
+  
+}
 .error{
  @include error(white,rgba(163, 20, 20, 0.932))
 }

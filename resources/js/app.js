@@ -51,7 +51,13 @@ Vue.component('account-setting',require('./components/admin/admins/account-setti
 Vue.component('admins-companies',require('./components/admin/companies/admin-companies.vue').default);
 Vue.component('admins-create-companies',require('./components/admin/companies/admin-companies-create.vue').default);
 Vue.component('admins-pagination-companies',require('./components/admin/companies/admin-pagination-companies.vue').default);
-
+Vue.component('admins-company',require('./components/admin/companies/company.vue').default);
+Vue.component('company-data',require('./components/admin/companies/company-data.vue').default);
+Vue.component('company-jobposts',require('./components/admin/companies/job_posts.vue').default);
+//admin applicant components
+Vue.component('applicants-component',require('./components/admin/applicant/applicants.vue').default);
+Vue.component('applicant-component',require('./components/admin/applicant/applicant.vue').default);
+Vue.component('applicants-pagination-component',require('./components/admin/applicant/applicants-pagination.vue').default);
 //company components
 Vue.component('account-company-component',require('./components/company/account-setting.vue').default);
 Vue.component('company-account-setting',require('./components/company/account-setting-components/settings.vue').default);
@@ -62,6 +68,11 @@ Vue.component('company-post-pagination',require('./components/company/job-post-c
 Vue.component('post-create-modal',require('./components/company/job-post-components/create-post-modal.vue').default);
 Vue.component('job-post-manange',require('./components/company/job-post.vue').default);
 Vue.component('manage-content',require('./components/company/single-post-components/manage-content.vue').default);
+//applicant components
+Vue.component('myaccount-component',require('./components/applicant/myaccount.vue').default);
+Vue.component('personal-data-component',require('./components/applicant/myaccount/personal-data.vue').default);
+Vue.component('account-setting-component',require('./components/applicant/myaccount/account-setting.vue').default);
+Vue.component('resume-specialization-component',require('./components/applicant/myaccount/resume-specialization.vue').default);
 /**
  * Next, we will create a fresh Vue application instance and attach it to
  * the page. Then, you may begin adding components to this application

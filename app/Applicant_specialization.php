@@ -13,6 +13,6 @@ class Applicant_specialization extends Model
         return $this->belongsTo('App\Specialization');
     }
     public function applicant_account(){
-        return $this->belongsTo('App\Applicants_account');
+        return $this->belongsTo('App\Applicant_account');
     }
 }

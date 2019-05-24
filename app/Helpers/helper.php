@@ -48,3 +48,71 @@ if(!function_exists('conver_sms_result')){
 		endswitch;
 	}
 }
+if(!function_exists('docxtostring')){
+	function docxtostring($file){
+		$filepath = $file;		
+		if(isset($filepath) && !file_exists($filepath)) {
+            return "File Not exists";
+        }
+        $fileArray = pathinfo($filepath);
+        $file_ext  = $fileArray['extension'];
+        if($file_ext == "doc" || $file_ext == "docx")
+        {
+            if($file_ext == "doc") {
+                return read_doc($filepath);
+            } elseif($file_ext == "docx") {
+                return read_docx($filepath);
+            }
+        } else {
+            return "Invalid File Type";
+		}
+	}
+}
+if(!function_exists('read_docx')){
+	function read_docx($filepath){
+			$striped_content = '';
+			$content = '';
+	
+			$zip = zip_open($filepath);
+	
+			if (!$zip || is_numeric($zip)) return false;
+	
+			while ($zip_entry = zip_read($zip)) {
+	
+				if (zip_entry_open($zip, $zip_entry) == FALSE) continue;
+	
+				if (zip_entry_name($zip_entry) != "word/document.xml") continue;
+	
+				$content .= zip_entry_read($zip_entry, zip_entry_filesize($zip_entry));
+	
+				zip_entry_close($zip_entry);
+			}// end while
+	
+			zip_close($zip);
+	
+			$content = str_replace('</w:r></w:p></w:tc><w:tc>', " ", $content);
+			$content = str_replace('</w:r></w:p>', "\r\n", $content);
+			$striped_content = strip_tags($content);
+	
+			return $striped_content;
+	}
+}
+if(!function_exists('read_doc')){
+	function read_doc($filepath){
+		$fileHandle = fopen($filepath, "r");
+			$line = @fread($fileHandle, filesize($filepath));   
+			$lines = explode(chr(0x0D),$line);
+			$outtext = "";
+			foreach($lines as $thisline)
+			  {
+				$pos = strpos($thisline, chr(0x00));
+				if (($pos !== FALSE)||(strlen($thisline)==0))
+				  {
+				  } else {
+					$outtext .= $thisline."";
+				  }
+			  }
+			 $outtext = preg_replace("/[^a-zA-Z0-9\s\,\.\-\n\r\t@\/\_\(\)]/","",$outtext);
+			return $outtext;
+	}
+}

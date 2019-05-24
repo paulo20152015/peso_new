@@ -9,11 +9,11 @@
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav mr-auto">
                     <li class="nav-item active">
-                        <button class="nav-link btn" type="button" data-toggle="modal" data-target="#modalCreateCompany">
+                        <button v-if="archivecompany == 'not-archive'" class="nav-link btn" type="button" data-toggle="modal" data-target="#modalCreateCompany">
                             <i class="fa fa-plus-circle" aria-hidden="true"></i> Account
                         </button>
                     </li>
-                    <li class="nav-item"><a class="nav-link" @click="showFilters()" href="#">{{filterFlag == 1?'Hide filter':'Show filter'}}</a></li>
+                    <li v-if="archivecompany == 'not-archive'" class="nav-item"><a class="nav-link" @click="showFilters()" href="#">{{filterFlag == 1?'Hide filter':'Show filter'}}</a></li>
                 </ul>
             </div>
         </nav>
@@ -107,22 +107,22 @@
                             <div class="col-lg-6" v-for='(company,index) in companies' :key='"company"+index'>
                                 <div class="card text-left">
                                 <div class="card-header">
-                                    <h5 class="mt-0"><small class="text-muted">#{{parseInt(links.current_page) * 10 - 10 + (index+1)}}</small> Company : {{company.name}}</h5>
-                                    <p><small>Address : {{company.company_address.street}}, {{company.company_address.barangay}}, {{company.company_address.town}}, {{company.company_address.city}}</small></p>
-                                    <small class="text-muted">Last login {{company.last_log == null || company.last_log == ''?'--':humanTime(company.last_log)}}</small>
+                                    <p><small class="text-muted">#{{parseInt(links.current_page) * 10 - 10 + (index+1)}}</small><a :href="'/admin/company/'+company.company_account.id" target="__blank" > Company : {{company.name}}</a><br>
+                                    <small>Address : {{company.company_address.street}}, {{company.company_address.barangay}}, {{company.company_address.town}}, {{company.company_address.city}}</small><br>
+                                    <small class="text-muted">Last login {{company.last_log == null || company.last_log == ''?'--':humanTime(company.last_log)}}</small></p>
                                 </div>
-                                <div class="card-body">
+                                <div class="card-body m-2">
                                     <div class="media row">
-                                    <img src="/img/unkown.png" style='max-width:100px;max-height:100px' class="align-self-start mr-3 img-fluid img-thumbnail" alt="blank">
+                                        <img v-for="(img,index) in company.company_files" :key="index" :src="img.name" style='max-width:50px;max-height:50px' class="align-self-start mr-3 img-fluid img-thumbnail" alt="blank">
                                     <div class="media-body">
-                                        <h5 class="mt-0">Username : {{company.company_account.username}}</h5>
-                                        <p class="mt-0">email : {{company.email}}</p>
-                                        <p class="mt-0">Contact number : {{company.contact_number}}</p>
-                                        <p class="mt-0">Landline number : {{company.land_line}}</p>
-                                        <p> <small class="text-muted">Company Size: {{company.company_size}}</small></p>
+                                        <p> Username : {{company.company_account.username}}<br>
+                                        email : {{company.email}}<br>
+                                        Contact number : {{company.contact_number}}<br>
+                                        Landline number : {{company.land_line}}<br>
+                                         <small class="text-muted">Company Size: {{company.company_size}}</small></p>
                                         <div class="btn-group" role="group" aria-label="Basic example">
-                                            <a :href="'/admin/company/'+company.id" target="__blank" class="btn btn-primary"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
-                                            <button :disabled='disable == 1' type="button" class="btn btn-secondary" @click="archive(company.name,company.company_account.id)">Archive</button>
+                                            <a :href="'/admin/company/'+company.company_account.id" target="__blank" class="btn btn-primary"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
+                                            <button :disabled='disable == 1' type="button" class="btn btn-secondary" @click="archive(company.name,company.company_account.id)">{{archivecompany == 'archive'?'Unarchive':'Archive'}}</button>
                                         </div>
                                     </div>
                                     </div>
@@ -151,14 +151,15 @@
 </template>
 <script>
 export default {
+    props:['archivecompany'],
     data(){
         return {
             companies:[],
             search:'',
-            filterFlag:0,
+            filterFlag:1,
             current_page:'',
             total:'',
-             disable:'',
+            disable:'',
             links:{
                 first_page:'',
                 last_page_url:'',
@@ -185,9 +186,10 @@ export default {
             this.filterFlag = this.filterFlag ==1?0:1;
         },
         archive:function(company,id){
+            let action = this.archivecompany == 'archive'?'recover':'archive';
             swal({
                 title: "Are you sure?",
-                text: "your about to archive "+company+"!",
+                text: "your about to "+action+" "+company+"!",
                 icon: "warning",
                 buttons: true,
                 dangerMode: true,
@@ -207,7 +209,7 @@ export default {
                     vm.disable = '';
                     console.log(error.response);
                 });
-                swal(company+" has been archived!", {
+                swal("Success", {
                 icon: "success",
                 });
             } else {
@@ -221,7 +223,8 @@ export default {
             let orders = vm.orderFilter;
             axios.post(url,{
                 order:orders,
-                search:vm.search
+                search:vm.search,
+                archivestatus:vm.archivecompany,
             })
             .then(function(res){
                 vm.companies = res.data.data;

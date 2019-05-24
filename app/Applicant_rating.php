@@ -12,6 +12,6 @@ class Applicant_rating extends Model
         return $this->belongsTo('App\Company_account');
     }
     public function applicant_account(){
-        return $this->belongsTo('App\Applicants_account');
+        return $this->belongsTo('App\Applicant_account');
     }
 }

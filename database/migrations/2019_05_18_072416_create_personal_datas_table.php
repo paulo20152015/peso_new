@@ -16,7 +16,7 @@ class CreatePersonalDatasTable extends Migration
         Schema::create('personal_datas', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('fname',50);
-            $table->string('mname',50);
+            $table->string('mname',50)->nullable();
             $table->string('lname',50);
             $table->date('date_of_birth');
             $table->string('email',70);
@@ -26,7 +26,7 @@ class CreatePersonalDatasTable extends Migration
             $table->longText('resume')->nullable();
             $table->unsignedBigInteger('applicant_account_id');
             $table->timestamps();
-            $table->foreign('applicant_account_id')->references('id')->on('applicants_accounts');
+            $table->foreign('applicant_account_id')->references('id')->on('applicant_accounts');
         });
     }
 

@@ -3,5 +3,5 @@
 @section('admin-active','active')
 @section('admin-active-triangle','triangle-nav')
 @section('content')
-    <admins-component></admins-component>
+    <admins-component :archivestatus="'not-archive'"></admins-component>
 @endsection

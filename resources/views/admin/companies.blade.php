@@ -4,5 +4,5 @@
 @section('companies-active-triangle','triangle-nav')
 @section('content')
     
-    <admins-companies />
+    <admins-companies :archivecompany="'not-archive'" />
 @endsection

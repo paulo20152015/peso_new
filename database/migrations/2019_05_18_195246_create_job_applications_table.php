@@ -21,7 +21,7 @@ class CreateJobApplicationsTable extends Migration
             $table->string('status',50);
             $table->timestamps();
             $table->foreign('job_post_id')->references('id')->on('job_posts');
-            $table->foreign('applicant_account_id')->references('id')->on('applicants_accounts');
+            $table->foreign('applicant_account_id')->references('id')->on('applicant_accounts');
         });
     }
 

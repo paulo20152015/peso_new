@@ -20,7 +20,7 @@ class CreateApplicantFilesTable extends Migration
             $table->String('main_location');
             $table->unsignedBigInteger('applicant_account_id');
             $table->timestamps();
-            $table->foreign('applicant_account_id')->references('id')->on('applicants_accounts');
+            $table->foreign('applicant_account_id')->references('id')->on('applicant_accounts');
         });
     }
 

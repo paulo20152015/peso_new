@@ -11,7 +11,12 @@ use App\Company_detail;
 use App\Company_account;
 use Illuminate\Support\Facades\Auth;
 use Mockery\Undefined;
-
+use App\Applicant_account;
+use App\Personal_data;
+use App\Applicant_file;
+use App\Applicant_specialization;
+use App\Applicant_rating;
+use App\Employment_track;
 class GlobalLogicContoller extends Controller
 {
     //for request with no specification
@@ -37,6 +42,11 @@ class GlobalLogicContoller extends Controller
         //if company 
         if(Auth::guard('company')->check() === true){
             $id = Auth::guard('company')->user()->id;
+            array_push($data,['company_account_id','=',$id]);
+        }
+        //if company 
+        if(Auth::guard('admin')->check() === true){
+            $id = session('adminView_company_id');
             array_push($data,['company_account_id','=',$id]);
         }
         $order = collect($request->order);
@@ -112,5 +122,99 @@ class GlobalLogicContoller extends Controller
                             ->paginate(10);
 
         return $posts;
+    }
+    public function returnResume(){
+        //download resume
+        if(Auth::guard('applicant')->check()){
+            $id = Auth::guard('applicant')->user()->id;
+        }else{
+            $id = 0;
+        }
+        $data ='';
+        $Applicant_file = Applicant_file::where([
+            ['type','=','resume'],
+            ['applicant_account_id','=',$id]
+            ])
+            ->get();
+        if($Applicant_file->count() == 1){
+            $resume = Applicant_file::where([
+                ['type','=','resume'],
+                ['applicant_account_id','=',$id]
+                ])
+            ->firstOrFail();    
+            $data = $resume->url_name;
+        }else{
+            $data = 'no data';
+        }
+        return $data;
+    }
+    public function applicantViewData(){
+        //check authority
+        if(Auth::guard('admin')->check()){
+            $id = Auth::guard('admin')->user()->id;
+            $authority = 'admin';
+            $applicant_id = session('adminView_applicant_id');
+        }elseif(Auth::guard('company')->check()){
+            $id = Auth::guard('company')->user()->id;
+            $authority = 'company';
+            $applicant_id = 0;
+        }else{
+            $id = 0;
+            $authority = 'none';
+            $applicant_id = 0;
+        }
+        $applicant_account = Applicant_account::findOrFail($applicant_id);
+        $personal_data = $applicant_account->personal_data;
+        $resume = $applicant_account->applicant_files->where('type','=','resume');
+        $profile_pic = $applicant_account->applicant_files->where('type','=','profile_pic');
+        $specialization = Applicant_specialization::with(['specialization'])->where([['applicant_account_id','=',$applicant_id]])->get();
+        $rating = Applicant_rating::with(['company_account'=>function($q){
+            $q->with(['company_detail'=>function($q){
+                $q->with(['company_files'=>function($q){
+                    $q->where('type','=','company_logo');
+                }]);
+            }]);
+        }])->where([['applicant_account_id','=',$applicant_id]])->get();
+        $employment_track = Employment_track::with(['Company_detail'=>function($q){
+            $q->with(['company_files'=>function($q){
+                $q->where('type','=','company_logo');
+            }]);
+        }])->where([['applicant_account_id','=',$applicant_id]])->orderByRaw('created_at DESC')->get();
+        
+        return [
+            'account_data'=>$applicant_account,
+            'personal_data'=>$personal_data,
+            'specialization'=>$specialization,
+            'resume'=>$resume,
+            'profile_pic'=>$profile_pic,
+            'ratings'=>$rating,
+            'employment_track'=>$employment_track,
+            'authority'=>$authority
+        ];
+    }
+    public function returnCompanyDetails(){
+        //check authority
+        if(Auth::guard('admin')->check()){
+            $id = Auth::guard('admin')->user()->id;
+            $authority = 'admin';
+            $company_id = session('adminView_company_id');
+        }elseif(Auth::guard('company')->check()){
+            $id = Auth::guard('company')->user()->id;
+            $authority = 'company';
+            $company_id = 0;
+        }else{
+            $id = 0;
+            $authority = 'none';
+            $company_id = 0;
+        }
+        $company_account = Company_account::findOrFail($company_id);
+        $detail_id = $company_account->company_detail->id;
+        $company_detail = Company_detail::findOrFail($detail_id);
+        return [
+            'detail'=>$company_account->company_detail,
+            'address'=>$company_detail->company_address,
+            'logo'=>$company_detail->company_files->where('type','=','company_logo'),
+            'cover'=>$company_detail->company_files->where('type','=','company_cover')
+        ];
     }
 }

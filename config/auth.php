@@ -107,7 +107,7 @@ return [
         ],
         'applicants' => [
             'driver' => 'eloquent',
-            'model' => App\Applicants_account::class,
+            'model' => App\Applicant_account::class,
         ],
         // 'users' => [
         //     'driver' => 'database',

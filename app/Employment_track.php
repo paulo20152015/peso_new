@@ -14,6 +14,6 @@ class Employment_track extends Model
         return $this->belongsTo('App\Company_detail');
     }
     public function applicant_account(){
-        return $this->belongsTo('App\Applicants_account');
+        return $this->belongsTo('App\Applicant_account');
     }
 }

@@ -18,7 +18,7 @@ class CreateApplicantSpecializationsTable extends Migration
             $table->unsignedBigInteger('applicant_account_id');
             $table->unsignedBigInteger('specialization_id');
             $table->timestamps();
-            $table->foreign('applicant_account_id')->references('id')->on('applicants_accounts');
+            $table->foreign('applicant_account_id')->references('id')->on('applicant_accounts');
             $table->foreign('specialization_id')->references('id')->on('specializations');
         });
     }

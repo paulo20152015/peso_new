@@ -20,7 +20,7 @@ class CreateApplicantRatingsTable extends Migration
             $table->unsignedBigInteger('applicant_account_id');
             $table->unsignedBigInteger('company_account_id');
             $table->timestamps();
-            $table->foreign('applicant_account_id')->references('id')->on('applicants_accounts');
+            $table->foreign('applicant_account_id')->references('id')->on('applicant_accounts');
             $table->foreign('company_account_id')->references('id')->on('company_accounts');
         });
     }

@@ -26,28 +26,7 @@
     <!-- Right navbar links -->
     <ul class="navbar-nav ml-auto">
       
-      <!-- Notifications Dropdown Menu -->
-      <li class="nav-item dropdown">
-        <a class="nav-link" data-toggle="dropdown" href="#">
-          <i class="fa fa-bell-o"></i>
-          <span class="badge badge-warning navbar-badge">15</span>
-        </a>
-        <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
-          <span class="dropdown-header">15 Notifications</span>
-          <div class="dropdown-divider"></div>
-          <a href="#" class="dropdown-item">
-            <i class="fa fa-envelope mr-2"></i> 4 new messages
-            <span class="float-right text-muted text-sm">3 mins</span>
-          </a>
-          <div class="dropdown-divider"></div>
-          <a href="#" class="dropdown-item">
-            <i class="fa fa-file mr-2"></i> 3 new reports
-            <span class="float-right text-muted text-sm">2 days</span>
-          </a>
-          <div class="dropdown-divider"></div>
-          <a href="#" class="dropdown-item dropdown-footer">See All Notifications</a>
-        </div>
-      </li>
+     
       <li class="nav-item">
           <form action="/admin/logout" method="POST">
               @csrf
@@ -114,8 +93,8 @@
                   <p>Applicants/Employee</p>
                 </a>
               </li>
-              <li class="nav-item">
-                <a href="#" class="nav-link">
+              <li class="nav-item @yield('archive-active-triangle')">
+                <a href="/admin/archive" class="nav-link @yield('archive-active')">
                   <i class="fa fa-archive nav-icon"></i>
                   <p>Archive</p>
                 </a>
@@ -155,7 +134,6 @@
 <!-- ./wrapper -->
 
 <!-- Scripts -->
-    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
     <script src="{{ asset('js/app.js') }}" defer></script>
 </body>
 </html>

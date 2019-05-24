@@ -23,7 +23,7 @@ class CreateEmploymentTracksTable extends Migration
             $table->string('status',70);
             $table->timestamps();
             $table->foreign('company_detail_id')->references('id')->on('company_details');
-            $table->foreign('applicant_account_id')->references('id')->on('applicants_accounts');
+            $table->foreign('applicant_account_id')->references('id')->on('applicant_accounts');
         });
     }
 
