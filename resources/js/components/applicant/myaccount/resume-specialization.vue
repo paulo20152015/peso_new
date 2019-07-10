@@ -1,6 +1,6 @@
 <template>
-    <div class="row mb-5 mt-2">
-        <div class="col-lg-6">
+    <div class="row mb-5 mt-2 bg-light p-3">
+        <div class="col-lg-6 p-3 border border-primary">
            <h6 class="card-subtitle mb-2 text-muted">List of Specializations :</h6>
             <form @submit.prevent="AddOrRemoveSpecialization('added')">
                 <div class="row">
@@ -12,7 +12,7 @@
                 <button type="submit" class="btn btn-primary col-lg-6 offset-lg-3 mt-3">Add</button>
             </form> 
         </div>
-        <div class="col-lg-6">
+        <div class="col-lg-6 p-3 border border-dark">
            <h6 class="card-subtitle mb-2 text-muted">Job Post current specialization :</h6>
             <form @submit.prevent="AddOrRemoveSpecialization('removed')">
                 <div class="row">
@@ -24,8 +24,8 @@
                 <button type="submit" class="btn btn-danger col-lg-6 offset-lg-3 mt-3">Remove</button>
             </form>
         </div>
-        <div class="col-lg-2">
-            <p v-if='resumeFile !="no data"'><a :href="resumeFile" class="btn btn-success">Download</a></p>
+        <div class="col-lg-2 mt-2">
+            <p v-if='resumeFile !="no data"'><a :href="resumeFile" class="btn btn-success">Download Resume</a></p>
             
             <form>
             <div class="form-group">
@@ -40,7 +40,7 @@
             </transition-group>
             </form>
         </div>
-        <div class="col-lg-9 row">
+        <div class="col-lg-9 row table-responsive">
             <h3 class='text-center col-lg-12'>Resume Contents</h3>
             <ckeditor :editor="editor" v-model="personalDataForm.resume"  :config="editorConfig"></ckeditor>
             <button :disabled='personalDataForm.busy' @click="save()" class="btn btn-primary text-center col-lg-12 mt-3">

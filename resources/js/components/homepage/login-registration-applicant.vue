@@ -172,9 +172,35 @@
                                 </p>
                     </transition>
                     <label for="remember"><input type="checkbox" v-model="applicantLoginForm.remember" name="remember" id="remember" > Remember Me</label>
+                    <label for=""><a href="#"  @click="toggleForgot()">Forgot Password</a></label> 
                     <button :disabled='applicantLoginForm.busy' class="btn" type="submit"><i v-if="spinnerLogin == 1"><span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span></i> Login</button>
                 </div>
             </form>
+        </div>
+        </transition>
+        <transition enter-active-class="animated bounceIn" leave-active-class="animated bounceOut">
+        <div class="section-applicant" v-if='toggle == 3'>
+            <h1 class="header-text">Forgot Password</h1>
+                <div class="form-container">
+                    <label for="username">Username</label>
+                    <input  type="text" v-model="applicantForgotForm.username" class='input-text' name='username' placeholder="enter your username" id='username' >
+                    <transition  enter-active-class="animated flipInX" leave-active-class="animated fadeOutRight">
+                                <p class='error' v-if="applicantForgotForm.errors.has('username')">
+                                {{ applicantForgotForm.errors.get('username') }}
+                                </p>
+                    </transition>
+                    <label for="number">Number</label>
+                    <input  type="text" v-model="applicantForgotForm.number" class='input-text' name='number' placeholder="enter your number" id='number' >
+                    <transition  enter-active-class="animated flipInX" leave-active-class="animated fadeOutRight">
+                                <p class='error' v-if="applicantForgotForm.errors.has('number')">
+                                {{ applicantForgotForm.errors.get('number') }}
+                                </p>
+                    </transition>
+                     <button :disabled='applicantForgotForm.busy' class="btn" type="button" @click="sendcode()"><i v-if="spinnerLogin == 1"><span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span></i> Send Code </button>
+                    <label for="code">Code</label>
+                    <input  type="text" v-model="applicantForgotForm.code" class='input-text' name='code' placeholder="enter your code" id='code' >
+                    <button @click="generateNewPass()" :disabled='applicantForgotForm.busy' class="btn" type="button"><i v-if="spinnerNewPass == 1"><span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span></i> Generate New Password </button>
+                </div>
         </div>
         </transition>
     </div>
@@ -189,6 +215,7 @@ export default {
            toggle:'',
            spinnerRegister:'',
            spinnerLogin:'',
+           spinnerNewPass:'',
            applicantRegistrationForm:new Form({
                 first_name:'',
                 middle_name:'',
@@ -207,9 +234,45 @@ export default {
                 password:'',
                 remember:''
             }),
+            applicantForgotForm:new Form({
+                username:'',
+                number:'',
+                code:''
+            }),
         }
     },
     methods:{
+        spinLoadingPass(){
+            this.spinnerNewPass = this.spinnerNewPass != 1 ?1:'';
+        },
+        generateNewPass(){
+            let vm = this;
+            vm.spinLoadingPass();
+            vm.applicantForgotForm.post('/applicant/resetPass')
+            .then( ({data}) => {
+                vm.spinLoadingPass();
+                console.log(data);
+                swal(data);
+                }).catch(function(error){
+                swal('Failed');
+                vm.spinLoadingPass();
+                });
+        }
+        ,
+        sendcode(){
+            let vm = this;
+            vm.spinLoadingLogin();
+            vm.applicantForgotForm.post('/applicant/resetCode')
+            .then( ({data}) => {
+                vm.spinLoadingLogin();
+                console.log(data);
+                swal(data);
+                }).catch(function(error){
+                swal('Failed');
+                vm.spinLoadingLogin();
+                });
+        }
+        ,
         spinLoadingRegister(){
             this.spinnerRegister = this.spinnerRegister != 1 ?1:'';
         },
@@ -266,6 +329,9 @@ export default {
        ,
        togglelogin(){
            this.toggle = this.toggle != 2?2:'';
+       },
+       toggleForgot(){
+           this.toggle = this.toggle != 3?3:'';
        }
     }
 }

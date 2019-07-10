@@ -1,5 +1,5 @@
 <template>
-    <div class="row mb-5 mt-2">
+    <div class="row mb-5 mt-2 bg-light p-3">
         <div class="col-lg-2">
             <img :src="profile_pic == 'na'?'/img/unkown.png':profile_pic"  height="100" width="100">
             <form>

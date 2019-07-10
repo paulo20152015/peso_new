@@ -92,7 +92,7 @@
                     </thead>
                     <tbody>
                         <tr v-for='(employment,index) in employments_history' :key="index">
-                            <td><img v-for="(pic,index) in employment.company_detail.company_files" :key="index" :src="pic.name" height="30" width="30" alt=""> <a :href="'/admin/company/'+employment.company_detail.company_account_id">{{employment.company_detail.name}}</a></td>
+                            <td><img v-for="(pic,index) in employment.company_detail.company_files" :key="index" :src="pic.name" height="30" width="30" alt=""> {{employment.company_detail.name}}</td>
                             <td>{{employment.position}}</td>
                             <td>{{employment.start_date}}</td>
                             <td>{{employment.end_date}}</td>
@@ -105,7 +105,8 @@
         </div>
         <div class="card m-2" id="Ratings">
             <div class="card-body">
-                <h4>Ratings</h4>
+                <h5>Ratings</h5>
+                <p>Average Rating : {{totalRatingValue}}</p>
                 <hr>
                 <div v-for="(rating,index) in ratings" :key="index" class="row border-bottom border-secondary p-2">
                     <div class="col-lg-1">
@@ -113,7 +114,7 @@
                     </div>
                     <div class="col-lg-11">
                         <blockquote> Rating : <span class="badge badge-secondary">{{rating.rate}} of 10</span> <i> <br>{{rating.message}}</i> 
-                           <a :href="'/admin/company/'+rating.company_account.id"> <strong class="blockquote-footer">{{rating.company_account.company_detail.name}}</strong></a> <small class="text-muted">{{humanTime(rating.created_at)}}</small>
+                            <strong class="blockquote-footer">{{rating.company_account.company_detail.name}}</strong> <small class="text-muted">{{humanTime(rating.created_at)}}</small>
                         </blockquote>
                     </div>
                 </div>
@@ -132,6 +133,7 @@ export default {
             resumes:'',
             employments_history:'',
             ratings:'',
+            totalRatingValue:''
         }
     },
     mounted(){
@@ -145,6 +147,16 @@ export default {
         getAge(date){
             return moment().diff(date, 'years');
         },
+        totalRating(arrayRating){
+           let totalAve = 0;
+           let count = 0;
+           arrayRating.forEach(function(rate){
+               totalAve += parseInt(rate.rate);
+               count++;
+           });
+            this.totalRatingValue = totalAve/count;
+        }
+        ,
         getApplicantData(){
             let vm = this;
             axios.post('/applicant/singleViewData')
@@ -156,6 +168,7 @@ export default {
                 vm.personal_data = res.data.account_data.personal_data;
                 vm.employments_history = res.data.employment_track;
                 vm.ratings = res.data.ratings;
+                vm.totalRating(res.data.ratings);
                 console.log(res.data);
             })
             .catch(function(error){

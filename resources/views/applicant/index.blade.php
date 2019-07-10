@@ -1,5 +1,7 @@
 @extends('layouts.applicant')
 @section('index','bot-triangle-nav')
 @section('content')
-    <company-post-component :archive_stat='"no"'></company-post-component>
+    @can('approved_applicants', App\Applicant_account::class)
+        <jobpost-component></jobpost-component>
+    @endcan
 @endsection

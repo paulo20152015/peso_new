@@ -25,6 +25,9 @@
         <transition  enter-active-class="animated bounceInRight" leave-active-class="animated fadeOutRight">
             <company-jobposts v-if='job_post == 1'></company-jobposts>
         </transition>
+        <transition  enter-active-class="animated bounceInRight" leave-active-class="animated fadeOutRight">
+            <company-employment v-if='employment == 1'></company-employment>
+        </transition>
     </div>
 </template>
 <script>

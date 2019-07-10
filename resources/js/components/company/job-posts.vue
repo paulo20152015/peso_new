@@ -36,9 +36,10 @@
                     </div>
                 </div>
 
-                <p class="col-lg-12">Order By: </p>
+                
 
                 <div class="col-lg-6">
+                    <p class="col-lg-12">Filter By: </p>
                     <div class="form-group">
                         <label for="staticEmail" class="col-sm-10 col-form-label">Specialization :</label>
                         <div class="col-sm-10">
@@ -69,6 +70,7 @@
                 </div>
 
                 <div class="col-lg-6">
+                    <p class="col-lg-12">Order By: </p>
                     <div class="form-group">
                         <label for="staticEmail" class="col-sm-10 col-form-label">Title:</label>
                         <div class="col-sm-10">

@@ -15,7 +15,9 @@
         <!--search bar-->
         <transition  enter-active-class="animated slideInDown" leave-active-class="animated slideOutRight">
         <div class="jumbotron" v-if="filterFlag==1">
+            <h3>filter, sort and Search</h3>
             <div class="row" >
+
                 <div class="col-lg-6 offset-lg-3  ">
                     <div class="input-group">
                         <input class="form-control "  @keyup='getJobPost()' @keyup.delete="getJobPost()"  @keyup.ctrl='getJobPost()' @keyup.enter='getJobPost()' v-model='search'  type="search"    placeholder="search keyword here" aria-label="Search">
@@ -27,9 +29,10 @@
                     </div>
                 </div>
 
-               
+                
 
                 <div class="col-lg-6">
+                    <p class="col-lg-12">Filter By: </p>
                     <div class="form-group">
                         <label for="staticEmail" class="col-sm-10 col-form-label">Specialization :</label>
                         <div class="col-sm-10">
@@ -60,7 +63,7 @@
                 </div>
 
                 <div class="col-lg-6">
-                    
+                    <p class="col-lg-12">Order By: </p>
                     <div class="form-group">
                         <label for="staticEmail" class="col-sm-10 col-form-label">Title:</label>
                         <div class="col-sm-10">

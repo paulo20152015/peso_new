@@ -9,6 +9,7 @@ use App\Specialization;
 use App\Job_post;
 use App\Company_detail;
 use App\Company_account;
+use App\Company_file;
 use Illuminate\Support\Facades\Auth;
 use Mockery\Undefined;
 use App\Applicant_account;
@@ -17,6 +18,7 @@ use App\Applicant_file;
 use App\Applicant_specialization;
 use App\Applicant_rating;
 use App\Employment_track;
+use App\Company_rating;
 class GlobalLogicContoller extends Controller
 {
     //for request with no specification
@@ -38,7 +40,6 @@ class GlobalLogicContoller extends Controller
         if(isset($request->archive_stat) && $request->archive_stat == 'yes'){
             $data = [['is_archive','=',1]];
         }
-        
         //if company 
         if(Auth::guard('company')->check() === true){
             $id = Auth::guard('company')->user()->id;
@@ -48,6 +49,12 @@ class GlobalLogicContoller extends Controller
         if(Auth::guard('admin')->check() === true){
             $id = session('adminView_company_id');
             array_push($data,['company_account_id','=',$id]);
+        }
+        if(Auth::guard('applicant')->check() === true){
+            if(isset($request->company_post) && $request->company_post == 'yes'){
+                $id = session('applicantView_company_id');
+                array_push($data,['company_account_id','=',$id]);
+            }
         }
         $order = collect($request->order);
         $orderRaw = '';
@@ -72,17 +79,25 @@ class GlobalLogicContoller extends Controller
         $tosearch =[];
         //for keyword search
         $search = isset($request->search) && $request->search != ''? $request->search:'empty';
-        $posts = Job_post::with(['company_account'=>function($query){
-                                return $query->with(['company_detail'=>function($query){
-                                    return $query->with(['company_files'=>function($q){
+        $posts = Job_post::with(['job_applications'=>function($q){
+                                    if(Auth::guard('applicant')->check() === true){
+                                        $id = Auth::guard('applicant')->user()->id;
+                                        return $q->where('applicant_account_id','=',$id);
+                                    }
+                                },
+                                'company_account'=>function($query){//job applicant
+                                    return $query->with(['company_detail'=>function($query){
+                                        return $query->with(['company_files'=>function($q){
                                         $q->where('type','=','company_logo');
-                                    }]);
+                                        }]);
                                 }]);
-                            },'job_specializations'=>function($query){
+                                },
+                                'job_specializations'=>function($query){
                                 return $query->with(['specialization']);
-                            },'town'=>function($query){
+                                },
+                                'town'=>function($query){
                                 return $query->with(['city']);
-                            }])
+                                }])
                             ->where($data)
                             ->where(function($q) use($specilization,$city,$town,$tosearch){
                                 if($specilization !== 'empty'){
@@ -92,7 +107,6 @@ class GlobalLogicContoller extends Controller
                                         }
                                     });
                                 }
-
                                 $q->whereHas('town',function($q) use($city,$town,$tosearch){
                                     
                                     if($city !== 'empty'){
@@ -157,7 +171,7 @@ class GlobalLogicContoller extends Controller
         }elseif(Auth::guard('company')->check()){
             $id = Auth::guard('company')->user()->id;
             $authority = 'company';
-            $applicant_id = 0;
+            $applicant_id = session('companyView_applicant_id');
         }else{
             $id = 0;
             $authority = 'none';
@@ -202,7 +216,12 @@ class GlobalLogicContoller extends Controller
             $id = Auth::guard('company')->user()->id;
             $authority = 'company';
             $company_id = 0;
-        }else{
+        }elseif(Auth::guard('applicant')->check()){
+            $id = Auth::guard('applicant')->user()->id;
+            $authority = 'applicant';
+            $company_id = session('applicantView_company_id');
+        }
+        else{
             $id = 0;
             $authority = 'none';
             $company_id = 0;
@@ -210,11 +229,42 @@ class GlobalLogicContoller extends Controller
         $company_account = Company_account::findOrFail($company_id);
         $detail_id = $company_account->company_detail->id;
         $company_detail = Company_detail::findOrFail($detail_id);
+        $logo = Company_file::where([['type','=','company_logo'],['company_detail_id','=',$detail_id ]])->get();
+        $cover = Company_file::where([['type','=','company_cover'],['company_detail_id','=',$detail_id ]])->get();
+        $ratings = Company_rating::with(['applicant_account'])
+        ->where([['company_account_id','=',$company_id]])
+        ->get();
         return [
             'detail'=>$company_account->company_detail,
             'address'=>$company_detail->company_address,
-            'logo'=>$company_detail->company_files->where('type','=','company_logo'),
-            'cover'=>$company_detail->company_files->where('type','=','company_cover')
+            'logo'=>$logo,
+            'cover'=>$cover,
+            'authority'=>$authority,
+            'ratings'=>$ratings
         ];
+    }
+    public function employment_record_company(Request $request){
+        //if has search and by status
+        $employment_status = $request->employment_status;
+        $search = $request->search;
+        $company_id = session('adminView_company_id');
+        $company = Company_account::findOrFail($company_id)->company_detail;
+        
+        $employees = Employment_track::where([['company_detail_id','=',$company->id],['status','=',$employment_status]])
+        ->where(function($q) use($search){
+            if($search != ''){
+                $q->whereHas('applicant_account',function($q) use($search){
+                    $q->whereHas('personal_data',function($q) use($search){
+                        $q->where('lname','like',"%$search%")->orderByRaw('lname ASC
+                        ');
+                    });
+                });
+            }
+        })
+        ->join('personal_datas','personal_datas.applicant_account_id','=','employment_tracks.applicant_account_id')
+        ->select('employment_tracks.*','personal_datas.fname','personal_datas.mname','personal_datas.lname','personal_datas.contact_num')
+        ->orderByRaw('personal_datas.lname ASC')
+        ->get();
+        return $employees;
     }
 }

@@ -1,7 +1,7 @@
 <template>
     <header>
         <div class="container">
-            <img src="" alt="no img"> <h1>PESO</h1>
+             <h1> <img src="/img/peso.png" width="60" height="60" alt="no img"> PESO</h1>
             <nav class="nav-media">
                 <div class="link-1"><router-link to="/applicant">Applicant/Employee</router-link></div>
                 <div class="link-2"><router-link to="/company">Company</router-link></div>

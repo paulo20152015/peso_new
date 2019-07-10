@@ -11,6 +11,14 @@ use App\Personal_data;
 use App\Applicant_file;
 use App\Applicant_specialization;
 use App\Specialization;
+use App\Job_post;
+use App\Job_specialization;
+use App\Company_file;
+use App\Job_application;
+use App\Employment_track;
+use App\Company_rating;
+use App\Applicant_rating;
+use App\Reset_code;
 class ApplicantLogicController extends Controller
 {
     //
@@ -82,6 +90,91 @@ class ApplicantLogicController extends Controller
             Auth::guard('applicant')->logout();
         }
         return redirect('/');
+    }
+    //this is for generating code
+    public function resetCode(Request $request){
+        $username = $request->username;
+        $number = $request->number;
+        $applicant = Applicant_account::where([['username','=',$username]])->get();
+        if($applicant->count() > 0){
+            //account does exist
+            $applicant = Applicant_account::where([['username','=',$username]])->firstOrFail();
+            if($number == $applicant->personal_data->contact_num){
+                //"number is equal"
+                //generate the code
+                $code = generateRandomString(5);//
+                //if has existing reset code mass update to invalid
+                $Reset_codes = Reset_code::where([['ref_id','=',$applicant->id],['user_type','=','applicant']])->get();
+                if($Reset_codes->count() > 0){
+                Reset_code::where([
+                    ['ref_id','=',$applicant->id],
+                    ['user_type','=','applicant']
+                    ])
+                ->update([
+                    'status'=>'invalid'
+                ]);//mass update to invalid
+                }
+                //create reset code entry
+                $Reset_code = new Reset_code();
+                $Reset_code->ref_id = $applicant->id;
+                $Reset_code->user_type = 'applicant';
+                $Reset_code->status = 'valid';
+                $Reset_code->code = $code;
+                $Reset_code->save();
+                //send sms
+                $message = "$username your password reset code is $code";
+                return conver_sms(sms($number,$message));
+            }else{
+                return "Mobile number is incorrect!";
+            }
+        }else{
+            return "Account does not exist";
+        }
+    }
+    //for reseting password
+    public function resetPass(Request $request){
+        $username = $request->username;
+        $number = $request->number;
+        $code = $request->code;
+        $applicant = Applicant_account::where([['username','=',$username]])->get();
+        if($applicant->count() > 0){
+            //account does exist
+            $applicant = Applicant_account::where([['username','=',$username]])->firstOrFail();
+            if($number == $applicant->personal_data->contact_num){
+                //"number is equal"
+                //check for code
+                $Reset_codes = Reset_code::where([
+                    ['ref_id','=',$applicant->id],
+                    ['user_type','=','applicant'],
+                    ['status','=','valid'],
+                    ['code','=',$code]
+                    ])
+                    ->get();
+                if($Reset_codes->count() > 0){
+                    //generate the new password
+                    $newpass = generateRandomString(10);//
+                    $applicant->password = Hash::make($newpass);
+                    $applicant->save();
+                    //send sms
+                    $message = "$username your new password is $newpass";
+                    conver_sms(sms($number,$message));
+                    Reset_code::where([
+                        ['ref_id','=',$applicant->id],
+                        ['user_type','=','applicant']
+                        ])
+                    ->update([
+                        'status'=>'invalid'
+                    ]);//mass update to invalid
+                    return  'You will receive an SMS message containing your new password, Please wait for it';
+                }else{
+                    return "Invalid code";
+                }
+            }else{
+                return "Mobile number is incorrect!";
+            }
+        }else{
+            return "Account does not exist";
+        }
     }
     public function profileData(){
         $id = Auth::guard('applicant')->user()->id;
@@ -317,5 +410,206 @@ class ApplicantLogicController extends Controller
                 
         }
         return $message;
+    }
+    public function getJobPost(){
+        $id = Auth::guard('applicant')->user()->id;
+        $post_id = session('applicant_single_view_post');
+        $job_post = Job_post::findOrFail($post_id);//post details
+        $company_details = Job_post::findOrFail($post_id)->company_account->company_detail; //company details
+        $company_account = Job_post::findOrFail($post_id)->company_account;//company acccount
+        $logo = Company_file::where([['type','=','company_logo'],['company_detail_id','=',$company_details->id]])->get();//logo
+        $town = $job_post->town;$job_post->town->city;//town
+        $specialization = Job_specialization::with(['specialization'])->where('job_post_id','=',$post_id)->get();//specialization
+        $job_application = Job_application::where([['job_post_id','=',$post_id],['applicant_account_id','=',$id]])->get();
+        return [
+            'company_account'=>$company_account,
+            'company_details'=>$company_details,
+            'company_logo'=>$logo,
+            'job_post'=>$job_post,
+            'town'=>$town,
+            'job_specializations'=>$specialization,
+            'job_application'=>$job_application
+        ];
+    }
+    public function createJobApplication($post_id){
+        $company = Job_post::findOrFail($post_id)->company_account;
+        $user = Auth::guard('applicant')->user()->personal_data;
+        $id = Auth::guard('applicant')->user()->id;
+        $employment = Employment_track::where([['applicant_account_id','=',$id],['status','=','ongoing']])->get();
+        $jobapplication = Job_application::where([['job_post_id','=',$post_id],['applicant_account_id','=',$id]])->get();   
+        if($employment->count() == 0){
+            if($jobapplication->count() > 0 ){
+                return ['message'=>"You already have an existing application to this post",'sms'=>''];
+            }else{
+                Job_application::create([
+                    'job_post_id'=>$post_id,
+                    'applicant_account_id'=>$id,
+                    'status'=>'pending',
+                ]);
+                $message = "$user->fname, $user->fname has applied to your job post";
+                $res = conver_sms_result(sms($company->number,$message));
+                return ['message'=>"Successfully applied",'sms'=>'The company has been notified'];
+            }
+        }else{
+                return ['message'=>"You are currently employed",'sms'=>''];
+        }   
+            
+    }
+    public function deleteJobApplication($post_id){
+        $company = Job_post::findOrFail($post_id)->company_account;
+        $user = Auth::guard('applicant')->user()->personal_data;
+        $id = Auth::guard('applicant')->user()->id;
+        $Job_application = Job_application::where([['job_post_id','=',$post_id],['applicant_account_id','=',$id]]);
+        if($Job_application->delete() > 0){
+            $message = "$user->fname, $user->fname has cancelled hisapplication to your job post";
+            $res = conver_sms_result(sms($company->number,$message));
+            return ['message'=>"Application has been cancelled",'sms'=>'The company has been notified'];
+        }else{
+            return ['message'=>"cancellation error",'sms'=>''];
+        }
+    }
+    public function ifEmployed(){
+        $id = Auth::guard('applicant')->user()->id;
+        $employment = Employment_track::where([['applicant_account_id','=',$id],['status','=','ongoing']])->get();
+        $count = $employment->count();
+        if($count > 0){
+            $Job_application = Job_application::where([['applicant_account_id','=',$id],['status','=','pending']])->delete();
+        }
+        return $count;
+    }
+    public function returnEmploymentRecord(){
+        $id = Auth::guard('applicant')->user()->id;
+        $employment = Employment_track::with(['company_detail'])->where([['applicant_account_id','=',$id]])
+        ->orderByRaw('created_at ASC')
+        ->get();
+        return $employment;
+    }
+    public function getCompanyRatingsByApplicant($id){
+        $applicant_id   = Auth::guard('applicant')->user()->id;
+        $company_id     = $id;
+        $companyRatingsByApplicant = Company_rating::where([['applicant_account_id','=',$applicant_id],['company_account_id','=',$company_id]])
+        ->get();
+        return $companyRatingsByApplicant;
+    }
+    public function rateCompany($id,Request $request){
+        //rate applicant
+        $applicant_id   = Auth::guard('applicant')->user()->id;
+        $company_id     = $id;
+        $request->validate([
+            'rate'=>'required|integer|min:1|max:10',
+            'comment'=>'required|min:5|max:150'
+        ]);
+        $rate =     Company_rating::create([
+            'message'=>$request->comment,
+            'rate'=>$request->rate,
+            'applicant_account_id'=> $applicant_id,
+            'company_account_id'=>$company_id
+        ]);
+        return "rated";
+    }
+    public function updateCompanyRating(Company_rating $id,Request $request){
+        $request->validate([
+            'rate'=>'required|integer|min:1|max:10',
+            'comment'=>'required|min:5|max:150'
+        ]);
+        $id->rate = $request->rate;
+        $id->message = $request->comment;
+        $id->save();
+    }
+    //returning all of applicant ratings
+    public function getApplicantRatings(){
+        $applicant_id   = Auth::guard('applicant')->user()->id;
+        $ratings = Applicant_rating::where([['applicant_account_id','=',$applicant_id]])
+        ->join('company_details','company_details.company_account_id','=','applicant_ratings.company_account_id')
+        ->select('applicant_ratings.*','company_details.name')
+        ->get();
+        return $ratings;
+    }
+    ///global/get-posts
+    public function getApplicationPost(Request $request){
+        $applicant_id   = Auth::guard('applicant')->user()->id;
+        
+        $order = collect($request->order);
+        $orderRaw = '';
+        $validCol = 'title created_at updated_at';
+        if($order->count() != 0){
+            $count = 0;
+           foreach($order as $key=>$value):
+            if(strpos($validCol,$value['collumn']) !== false && ($value['value'] == 1 || $value['value'] == 2)):
+            $orderRaw .= $count == 0?'':',';
+            $orderRaw .= $value['collumn'].' '.orderConvert($value['value']);
+            $count++;
+            endif;
+           endforeach;
+        }
+        $finalOrder = $orderRaw ==''?'created_at DESC':$orderRaw;
+        //{collumn:'specialization',comparison:'=',value:''},
+          //      {collumn:'city',comparison:'=',value:''},
+           //     {collumn:'town',comparison:'=',value:''},
+        $specilization = $request->filter[0]['collumn'] =='specialization' &&  is_int($request->filter[0]['value']) && $request->filter[0]['value'] != 0? ['specialization_id','=',$request->filter[0]['value']]:'empty';
+        $city = $request->filter[1]['collumn'] =='city' &&  is_int($request->filter[1]['value'])  && $request->filter[1]['value'] != 0? ['city_id','=',$request->filter[1]['value']]:'empty';
+        $town = $request->filter[2]['collumn'] =='town' &&  is_int($request->filter[2]['value'])  && $request->filter[2]['value'] !=0? ['id','=',$request->filter[2]['value']]:'empty';
+        $tosearch =[];
+        //for keyword search
+        $search = isset($request->search) && $request->search != ''? $request->search:'empty';
+        $posts = Job_post::with(['job_applications'=>function($q){
+                                    if(Auth::guard('applicant')->check() === true){
+                                        $id = Auth::guard('applicant')->user()->id;
+                                        return $q->where('applicant_account_id','=',$id);
+                                    }
+                                },
+                                'company_account'=>function($query){//job applicant
+                                    return $query->with(['company_detail'=>function($query){
+                                        return $query->with(['company_files'=>function($q){
+                                        $q->where('type','=','company_logo');
+                                        }]);
+                                }]);
+                                },
+                                'job_specializations'=>function($query){
+                                return $query->with(['specialization']);
+                                },
+                                'town'=>function($query){
+                                return $query->with(['city']);
+                                }])
+                            ->whereHas('job_applications',function($q) use($applicant_id){
+                                $q->where('applicant_account_id','=',$applicant_id);
+                            })
+                            ->where(function($q) use($specilization,$city,$town,$tosearch){
+                                if($specilization !== 'empty'){
+                                    $q->whereHas('job_specializations',function($q) use($specilization){
+                                        if($specilization !== 'empty'){
+                                            $q->where([$specilization]);
+                                        }
+                                    });
+                                }
+                                $q->whereHas('town',function($q) use($city,$town,$tosearch){
+                                    
+                                    if($city !== 'empty'){
+                                        array_push($tosearch,$city);
+                                    }
+                                    if($town !== 'empty'){
+                                        array_push($tosearch,$town);
+                                    }
+                                    if($city !== 'empty' || $town !== 'empty'){
+                                        $q->where($tosearch);
+                                    }
+                                });
+                                
+                            })
+                            ->where(function($q) use($search){
+                                if($search !== 'empty'){
+                                    $title = ['collumn'=>'title','comparison'=>'like','value'=>"%$search%"];
+                                    $full_address = ['collumn'=>'full_address','comparison'=>'like','value'=>"%$search%"];
+                                    $work_experience = ['collumn'=>'work_experience','comparison'=>'like','value'=>"%$search%"];
+                                    $job_description = ['collumn'=>'job_description','comparison'=>'like','value'=>"%$search%"];
+                                    $job_requirements = ['collumn'=>'job_requirements','comparison'=>'like','value'=>"%$search%"];
+                                    $q->where([$title])->orWhere([$full_address])->orWhere([$work_experience])->orWhere([$job_description])
+                                    ->orWhere([$job_requirements]);
+                                }
+                            })
+                            ->orderByRaw($finalOrder)
+                            ->paginate(10);
+
+        return $posts;
     }
 }

@@ -19,6 +19,6 @@ class ApplicantAccountPolicy
         //
     }
     public function approved_applicants(Applicant_account $Applicant_account){
-        return $Applicant_account->is_approved != 0;
+        return $Applicant_account->is_approved != 0 && $Applicant_account->is_approved != 2;
     }
 }

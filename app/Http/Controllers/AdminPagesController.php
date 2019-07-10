@@ -42,6 +42,9 @@ class AdminPagesController extends Controller
     public function archive(){
         return view('admin.archive');
     }
+    public function jobPostCategories(){
+        return view('admin.jobCategories');
+    }
     //
     
 }

@@ -16,7 +16,10 @@ use App\Applicant_file;
 use Validator;
 use App\Job_post;
 use App\Job_application;
-
+use App\City;
+use App\Specialization;
+use App\Town;
+use App\Reset_code;
 class AdminController extends Controller
 {
     
@@ -42,6 +45,91 @@ class AdminController extends Controller
     public function logout(){
         Auth::guard('admin')->logout();
         return redirect('/');
+    }
+    //this is for generating code
+    public function resetCode(Request $request){
+        $username = $request->username;
+        $number = $request->number;
+        $Admin = Admin::where([['username','=',$username]])->get();
+        if($Admin->count() > 0){
+            //account does exist
+            $Admin = Admin::where([['username','=',$username]])->firstOrFail();
+            if($number == $Admin->number){
+                //"number is equal"
+                //generate the code
+                $code = generateRandomString(5);//
+                //if has existing reset code mass update to invalid
+                $Reset_codes = Reset_code::where([['ref_id','=',$Admin->id],['user_type','=','admin']])->get();
+                if($Reset_codes->count() > 0){
+                Reset_code::where([
+                    ['ref_id','=',$Admin->id],
+                    ['user_type','=','admin']
+                    ])
+                ->update([
+                    'status'=>'invalid'
+                ]);//mass update to invalid
+                }
+                //create reset code entry
+                $Reset_code = new Reset_code();
+                $Reset_code->ref_id = $Admin->id;
+                $Reset_code->user_type = 'admin';
+                $Reset_code->status = 'valid';
+                $Reset_code->code = $code;
+                $Reset_code->save();
+                //send sms
+                $message = "$username your password reset code is $code";
+                return conver_sms(sms($number,$message));
+            }else{
+                return "Mobile number is incorrect!";
+            }
+        }else{
+            return "Account does not exist";
+        }
+    }
+    //for reseting password
+    public function resetPass(Request $request){
+        $username = $request->username;
+        $number = $request->number;
+        $code = $request->code;
+        $Admin = Admin::where([['username','=',$username]])->get();
+        if($Admin->count() > 0){
+            //account does exist
+            $Admin = Admin::where([['username','=',$username]])->firstOrFail();
+            if($number == $Admin->number){
+                //"number is equal"
+                //check for code
+                $Reset_codes = Reset_code::where([
+                    ['ref_id','=',$Admin->id],
+                    ['user_type','=','admin'],
+                    ['status','=','valid'],
+                    ['code','=',$code]
+                    ])
+                    ->get();
+                if($Reset_codes->count() > 0){
+                    //generate the new password
+                    $newpass = generateRandomString(10);//
+                    $Admin->password = Hash::make($newpass);
+                    $Admin->save();
+                    //send sms
+                    $message = "$username your new password is $newpass";
+                    conver_sms(sms($number,$message));
+                    Reset_code::where([
+                        ['ref_id','=',$Admin->id],
+                        ['user_type','=','admin']
+                        ])
+                    ->update([
+                        'status'=>'invalid'
+                    ]);//mass update to invalid
+                    return  'You will receive an SMS message containing your new password, Please wait for it';
+                }else{
+                    return "Invalid code";
+                }
+            }else{
+                return "Mobile number is incorrect!";
+            }
+        }else{
+            return "Account does not exist";
+        }
     }
     //remake it
     public function store(Request $request){
@@ -272,7 +360,9 @@ class AdminController extends Controller
             $townSearch = ['collumn'=>'town','comparison'=>'like','value'=>"%$keyword%"];
             $barangaySearch = ['collumn'=>'barangay','comparison'=>'like','value'=>"%$keyword%"];
             $streetSearch = ['collumn'=>'street','comparison'=>'like','value'=>"%$keyword%"];
-            $val = Company_detail::with(['company_account','company_address','company_files'])
+            $val = Company_detail::with(['company_account','company_address','company_files'=>function($q){
+                $q->where('type','=','company_logo');
+            }])
             ->whereHas('company_account',function($q) use($arch){
                 $q->where([$arch]);
             })->where(function($query) use($citySearch,$townSearch,$barangaySearch,$streetSearch,$nameSearch,$emailSearch,$contact_numberSearch,$usernameSearch){
@@ -285,7 +375,9 @@ class AdminController extends Controller
             
             return $val;
         }else{
-            $val = Company_detail::with(['company_account','company_address','company_files'])
+            $val = Company_detail::with(['company_account','company_address','company_files'=>function($q){
+                $q->where('type','=','company_logo');
+            }])
             ->whereHas('company_account',function($q) use($arch){
                 $q->where([$arch]);
             })->orderByRaw($finalOrder)->paginate(10);
@@ -362,5 +454,69 @@ class AdminController extends Controller
             ->where([$arch,['is_approved','=',$is_approved]])->orderByRaw($finalOrder)->paginate(10);
             return $val;
         }
+    }
+    public function addSpecialization(Request $request){
+        $validated = $request->validate([
+            'specialization'=>'required|min:2|max:50|unique:specializations,specialization'
+            ]);
+        $created = Specialization::create([
+            'specialization'=>$request->specialization
+        ]);
+        return "Created";
+    }
+    public function addCity(Request $request){
+        $validated = $request->validate([
+            'city'=>'required|min:2|max:50|unique:cities,city'
+            ]);
+        $created = City::create([
+            'city'=>$request->city
+        ]);
+        return "created";
+    }
+    public function getSpecialization(){
+        $specialization = Specialization::where([['id','!=',0]])->orderByRaw("specialization ASC")->get();
+        return $specialization;
+    }
+    public function getCity(){
+        $city = City::where([['id','!=',0]])->orderByRaw("city ASC")->get();
+        return $city;
+    }
+    public function updateSpecialization(Specialization $id,Request $request){
+        $validated = $request->validate([
+            'specialization'=>'required|min:2|max:50|unique:specializations,specialization'
+            ]);
+        $id->specialization =   $request->specialization;
+        $id->save();
+        return "updated";
+    }
+    public function updateCity(City $id,Request $request){
+        $validated = $request->validate([
+            'city'=>'required|min:2|max:50|unique:cities,city'
+            ]);
+        $id->city =   $request->city;
+        $id->save();
+        return "updated";    
+    }
+    public function getTown($id){
+        $Town = Town::where([['city_id','=',$id]])->orderByRaw("town ASC")->get();
+        return $Town;
+    }
+    public function updateTown(Town $id,Request $request){
+        $validated = $request->validate([
+            'town'=>'required|min:2|max:50|unique:towns,town'
+            ]);
+        $id->town =   $request->town;
+        $id->save();
+        return "updated";    
+    }
+    public function addTown($id,Request $request){
+        $validated = $request->validate([
+            'town'=>'required|min:2|max:50|unique:towns,town'
+            ]);
+        $created = Town::create([
+            'city_id'=>$id,
+            'town'=>$request->town
+        ]);
+        return "created";
     }
 }

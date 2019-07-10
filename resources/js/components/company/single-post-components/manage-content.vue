@@ -12,7 +12,7 @@
                                 <label class="form-check-label" :for="'adding'+specialization.id"><ins>{{specialization.specialization}}</ins></label>
                             </div>
                         </div>
-                        <button type="submit" class="btn btn-primary col-lg-6 offset-lg-3 mt-3">Add</button>
+                        <button v-if="archive != 1" type="submit" class="btn btn-primary col-lg-6 offset-lg-3 mt-3">Add</button>
                     </form>
                 </div>
             </div>
@@ -27,7 +27,7 @@
                                 <label class="form-check-label" :for="'removing'+specialization.id"><ins>{{specialization.specialization.specialization}}</ins></label>
                             </div>
                         </div>
-                        <button type="submit" class="btn btn-danger col-lg-6 offset-lg-3 mt-3">Remove</button>
+                        <button v-if="archive != 1" type="submit" class="btn btn-danger col-lg-6 offset-lg-3 mt-3">Remove</button>
                     </form>
                 </div>
             </div>
@@ -139,7 +139,7 @@
                     </p>
                 </transition>
             </div>
-            <button :disabled="jobPostCreateForm.busy"  type="submit" class="btn btn-primary col-lg-6 offset-lg-3 mt-3" >
+            <button v-if="archive != 1" :disabled="jobPostCreateForm.busy || archive == 1"  type="submit" class="btn btn-primary col-lg-6 offset-lg-3 mt-3" >
                 <i v-if="spinner == 1"><span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span></i>
                 Save
             </button>
@@ -155,6 +155,7 @@ import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 export default {
     data(){
         return{
+            archive:'',
             post:'',
             cities:'',
             towns:'',
@@ -203,6 +204,7 @@ export default {
                vm.jobPostCreateForm.experience = res.data.work_experience;
                vm.jobPostCreateForm.job_description = res.data.job_description;
                vm.jobPostCreateForm.job_requirements = res.data.job_requirements;
+               vm.archive = res.data.is_archive;
                 console.log(res.data);
             })
             .catch(function(error){

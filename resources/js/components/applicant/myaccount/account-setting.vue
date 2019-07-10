@@ -1,5 +1,5 @@
 <template>
-    <div class="row mb-5 mt-2">
+    <div class="row mb-5 mt-2 bg-light p-3">
         <div class="col-lg-6 ">
             <h5 >Account Settings</h5>
             <p>Username: {{username}}</p>

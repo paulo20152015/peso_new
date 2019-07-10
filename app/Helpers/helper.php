@@ -2,7 +2,7 @@
 
 if(!function_exists('sms')){
     function sms($number,$message){
-		$apicode="TR-PAUPA989186_V6VC3";
+		$apicode="TR-RENMA302689_LP556";
         $url = 'https://www.itexmo.com/php_api/api.php';
 		$itexmo = array('1' => $number, '2' => $message, '3' => $apicode);
 		$param = array(
@@ -27,23 +27,49 @@ if(!function_exists('orderConvert')){
         return $value;
     }
 }
+if(!function_exists('generateRandomString')){
+    function generateRandomString($length = 10){
+		$characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+		$charactersLength = strlen($characters);
+		$randomString = '';
+		for ($i = 0; $i < $length; $i++) {
+			$randomString .= $characters[rand(0, $charactersLength - 1)];
+		}
+		return $randomString;
+    }
+}
 if(!function_exists('conver_sms_result')){
 	function conver_sms_result($result){
 		switch($result):
 			case 0:
-				return "Sms notification has been sent";
+				return "Notification has been sent";
 			break;
 			case 1:
-				return "SMS not delivered, Invalid Number";
+				return "Notification is not delivered, Invalid Number";
 			break;
 			case 2:
-				return "SMS not delivered, Invalid message or missing";
+				return "Notification is not delivered, Invalid message or missing";
 			break;
 			case 3:
-				return "SMS not delivered, invalid Api key";
+				return "Notification is not delivered, invalid Api key";
 			break;
 			default:
-			 return "SMS message failed to send";
+			 return "Notification message failed to send";
+			break;
+		endswitch;
+	}
+}
+if(!function_exists('conver_sms')){
+	function conver_sms($result){
+		switch($result):
+			case 0:
+				return "Notification has been sent";
+			break;
+			case 1:
+				return "Notification not delivered, Invalid Number";
+			break;
+			default:
+			 return "SMS failed to send";
 			break;
 		endswitch;
 	}

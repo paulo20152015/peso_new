@@ -1,6 +1,6 @@
 <template>
-    <div>
-        <nav class="container navbar-expand-lg navbar-dark  bg-secondary mt-2 mb-4">
+    <div class="container">
+        <nav class="navbar-expand-lg navbar-dark  bg-secondary mt-2 mb-4">
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
             </button>
@@ -18,6 +18,9 @@
                 <li class="nav-item">
                     <a  @click="toggleComponents('my_ratings')" :class="{'bot-triangle-nav':my_ratings==1}" class="nav-link btn-outline-dark" href="#">My ratings</a>
                 </li>
+                <li class="nav-item">
+                    <a  @click="toggleComponents('job_application_history')" :class="{'bot-triangle-nav':job_application_history==1}" class="nav-link btn-outline-dark" href="#">Job application history</a>
+                </li>
             </ul>
             </div>
         </nav>
@@ -31,7 +34,10 @@
             <resume-specialization-component v-if='resume == 1'></resume-specialization-component>
         </transition>
         <transition  enter-active-class="animated bounceInRight" leave-active-class="animated fadeOutRight">
-            <h1 v-if='my_ratings == 1'> my ratings</h1>
+            <my-ratings v-if='my_ratings == 1'> </my-ratings>
+        </transition>
+        <transition  enter-active-class="animated bounceInRight" leave-active-class="animated fadeOutRight">
+            <application-history v-if='job_application_history == 1'> </application-history>
         </transition>
     </div>
 </template>
@@ -42,7 +48,8 @@ export default {
             personal_data:1,
             account_settings:'',
             resume:'',
-            my_ratings:''
+            my_ratings:'',
+            job_application_history:''
         }
     },
     methods:{
@@ -54,25 +61,36 @@ export default {
                     vm.account_settings = '';
                     vm.resume = '';
                     vm.my_ratings = '';
+                    vm.job_application_history ='';
                     break;
                 case 'account_settings':
                     vm.personal_data = '';
                     vm.account_settings = 1;
                     vm.resume = '';
                     vm.my_ratings = '';
+                    vm.job_application_history ='';
                     break;
                 case 'resume':
                     vm.personal_data = '';
                     vm.account_settings = '';
                     vm.resume = 1;
                     vm.my_ratings = '';
+                    vm.job_application_history ='';
                     break;
                 case 'my_ratings':
                     vm.personal_data = '';
                     vm.account_settings = '';
                     vm.resume = '';
                     vm.my_ratings = 1;
-                    break;    
+                    vm.job_application_history ='';
+                    break;  
+                case 'job_application_history':
+                    vm.personal_data = '';
+                    vm.account_settings = '';
+                    vm.resume = '';
+                    vm.my_ratings = '';
+                    vm.job_application_history =1;
+                    break;  
                 default:
                     break;
             }

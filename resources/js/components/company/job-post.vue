@@ -1,6 +1,6 @@
 <template>
     <div>
-        <nav class="navbar navbar-expand-lg navbar-light p-3 mb-2 bg-secondary text-white">
+        <nav class="navbar navbar-expand-lg navbar-light p-3 bg-secondary text-white">
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo01" aria-controls="navbarTogglerDemo01" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
             </button>
@@ -11,13 +11,16 @@
                     <a class="nav-link badge-secondary" href="#" @click="toggleComponents('manage_content')" >Manage Content</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link badge-secondary" href="#" @click="toggleComponents('manage_application')" >Applicant Management</a>
+                    <a class="nav-link badge-secondary" href="#" @click="toggleComponents('manage_application')" >Application Management</a>
                 </li>
             </ul>
             </div>
         </nav>
         <transition  enter-active-class="animated bounceInRight" leave-active-class="animated fadeOutRight">
             <manage-content v-if='manage_content == 1' ></manage-content>
+        </transition>
+        <transition  enter-active-class="animated bounceInRight" leave-active-class="animated fadeOutRight">
+            <application-management v-if='manage_application == 1' ></application-management>
         </transition>
     </div>
 </template>

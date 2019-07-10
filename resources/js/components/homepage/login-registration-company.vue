@@ -1,6 +1,7 @@
 <template>
     <div class="login-container">
-        <div class="login-area">
+
+        <div class="login-area" v-if="loginForm == 1">
             <h1 class="login-head">Company Sign-in</h1>
             <form action="" @submit.prevent="login()">
                 <div class="form-container">
@@ -38,11 +39,36 @@
                         </p>
                     </transition>
                     <label for="remember"><input v-model="companyLoginForm.remember" type="checkbox" name="remember" id="remember"> Remember Me</label>
+                    <a href="#" @click="toggleLoginForgot()">Forgot Password</a>
                     <button :disabled='disable == 1' class="btn" type="submit"><i v-if="spinner == 1"><span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span></i> Login</button>
                 </div>
             </form>
         </div>
-        
+
+        <div class="login-area" v-else>
+            <h1 class="login-head">Forgot Password</h1>
+            <div class="form-container">
+                    <label for="username">Username</label>
+                    <input  type="text" v-model="companyForgotForm.username" class='input-text' name='username' placeholder="enter your username" id='username' >
+                    <transition  enter-active-class="animated flipInX" leave-active-class="animated fadeOutRight">
+                                <p class='error' v-if="companyForgotForm.errors.has('username')">
+                                {{ companyForgotForm.errors.get('username') }}
+                                </p>
+                    </transition>
+                    <label for="number">Number</label>
+                    <input  type="text" v-model="companyForgotForm.number" class='input-text' name='number' placeholder="enter your number" id='number' >
+                    <transition  enter-active-class="animated flipInX" leave-active-class="animated fadeOutRight">
+                                <p class='error' v-if="companyForgotForm.errors.has('number')">
+                                {{ companyForgotForm.errors.get('number') }}
+                                </p>
+                    </transition>
+                     <button :disabled='companyForgotForm.busy' class="btn" type="button" @click="sendcode()"><i v-if="spinnerLogin == 1"><span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span></i> Send Code </button>
+                    <label for="code">Code</label>
+                    <input  type="text" v-model="companyForgotForm.code" class='input-text' name='code' placeholder="enter your code" id='code' >
+                    <button @click="generateNewPass()" :disabled='companyForgotForm.busy' class="btn" type="button"><i v-if="spinnerNewPass == 1"><span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span></i> Generate New Password </button>
+                    <a href="#" @click="toggleLoginForgot()">Login</a>
+            </div>
+        </div>
     </div>
 </template>
 <script>
@@ -50,21 +76,67 @@
 export default {
     data(){
         return {
+            resend:0,
             spinner:'',
+            spinnerLogin:'',
             message:'',
             messageSuccess:'',
             disable:'',
+            loginForm:1,
+            spinnerNewPass:'',
             companyLoginForm:new Form({
                 username:'',
                 password:'',
                 remember:''
             }),
+            companyForgotForm:new Form({
+                username:'',
+                number:'',
+                code:''
+            }),
         }
     },
     methods:{
+        spinLoadingPass(){
+            this.spinnerNewPass = this.spinnerNewPass != 1 ?1:'';
+        },
+        spinLoadingLogin(){
+            this.spinnerLogin = this.spinnerLogin != 1 ?1:'';
+        },
+        generateNewPass(){
+            let vm = this;
+            vm.spinLoadingPass();
+            vm.companyForgotForm.post('/company/resetPass')
+            .then( ({data}) => {
+                vm.spinLoadingPass();
+                console.log(data);
+                swal(data);
+                }).catch(function(error){
+                swal('Failed');
+                vm.spinLoadingPass();
+                });
+        }
+        ,
+        sendcode(){
+            let vm = this;
+            vm.spinLoadingLogin();
+            vm.companyForgotForm.post('/company/resetCode')
+            .then( ({data}) => {
+                vm.spinLoadingLogin();
+                console.log(data);
+                swal(data);
+                }).catch(function(error){
+                swal('Failed');
+                vm.spinLoadingLogin();
+                });
+        },
         spinLoading(){
             this.spinner = this.spinner != 1 ?1:'';
         },
+        toggleLoginForgot(){
+           this.loginForm = this.loginForm == 1?0:1;
+        }
+        ,
         login(){
            let vm = this;
             this.$validator.validateAll(['username','password']).then(function(result){
